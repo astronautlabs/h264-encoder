@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2020 Trevor Sundberg
+Copyright (c) 2020 Trevor Sundberg, William Lahti
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
