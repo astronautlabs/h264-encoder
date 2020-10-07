@@ -11,9 +11,8 @@
 #define H264E_MAX_THREADS 0
 #define MINIH264_IMPLEMENTATION
 #include "minih264e.h"
-#include "mp4v2/mp4v2.h"
 
-#include "h264-mp4-encoder.h"
+#include "h264-encoder.h"
 
 #define INITIALIZE_MESSAGE "Function initialize has not been called"
 
@@ -30,12 +29,10 @@ enum class NALU
   INVALID = 0x00,
 };
 
-class H264MP4EncoderPrivate
+class H264EncoderPrivate
 {
 public:
-  H264MP4Encoder *encoder = nullptr;
-  MP4FileHandle mp4 = nullptr;
-  MP4TrackId video_track = 0;
+  H264Encoder *encoder = nullptr;
 
   int frame = 0;
   H264E_persist_t *enc = nullptr;
@@ -45,100 +42,17 @@ public:
   static void nalu_callback(const uint8_t *nalu_data, int sizeof_nalu_data, void *token);
 };
 
-void H264MP4EncoderPrivate::nalu_callback(
+void H264EncoderPrivate::nalu_callback(
     const uint8_t *nalu_data, int sizeof_nalu_data, void *token)
 {
-  H264MP4EncoderPrivate *encoder_private = (H264MP4EncoderPrivate *)token;
-  H264MP4Encoder *encoder = encoder_private->encoder;
-
-  uint8_t *data = const_cast<uint8_t *>(nalu_data - STARTCODE_4BYTES);
-  const int size = sizeof_nalu_data + STARTCODE_4BYTES;
-
-  HME_CHECK_INTERNAL(size >= 5);
-  HME_CHECK_INTERNAL(data[0] == 0 && data[1] == 0 && data[2] == 0 && data[3] == 1);
-
-  NALU index = (NALU)data[4];
-
-  if (encoder->debug)
-  {
-    printf("nalu=");
-    switch (index)
-    {
-    case NALU::SPS:
-      printf("SPS");
-      break;
-    case NALU::PPS:
-      printf("PPS");
-      break;
-    case NALU::I:
-      printf("I");
-      break;
-    case NALU::P:
-      printf("P");
-      break;
-    default:
-      HME_CHECK(false, "Unknown frame type");
-      break;
-    }
-
-    printf(", hex=");
-    for (size_t i = 0; i < sizeof_nalu_data && i < 16; ++i)
-    {
-      if (i != 0)
-      {
-        printf(" ");
-      }
-      printf("%02X", nalu_data[i]);
-      if (i == 15 && sizeof_nalu_data != 16)
-      {
-        printf("...");
-      }
-    }
-    printf(", bytes=%d\n", sizeof_nalu_data);
-  }
-
-  switch (index)
-  {
-  case NALU::SPS:
-    if (encoder_private->video_track == MP4_INVALID_TRACK_ID)
-    {
-      encoder_private->video_track = MP4AddH264VideoTrack(
-          encoder_private->mp4,
-          TIMESCALE,
-          TIMESCALE / encoder->frameRate,
-          encoder->width,
-          encoder->height,
-          data[5], // sps[1] AVCProfileIndication
-          data[6], // sps[2] profile_compat
-          data[7], // sps[3] AVCLevelIndication
-          3);      // 4 bytes length before each NAL unit
-      HME_CHECK_INTERNAL(encoder_private->video_track != MP4_INVALID_TRACK_ID);
-      //  Simple Profile @ Level 3
-      MP4SetVideoProfileLevel(encoder_private->mp4, 0x7F);
-    }
-    MP4AddH264SequenceParameterSet(encoder_private->mp4, encoder_private->video_track, nalu_data, sizeof_nalu_data);
-    break;
-  case NALU::PPS:
-    MP4AddH264PictureParameterSet(encoder_private->mp4, encoder_private->video_track, nalu_data, sizeof_nalu_data);
-    break;
-  case NALU::I:
-  case NALU::P:
-    data[0] = sizeof_nalu_data >> 24;
-    data[1] = sizeof_nalu_data >> 16;
-    data[2] = sizeof_nalu_data >> 8;
-    data[3] = sizeof_nalu_data & 0xff;
-    HME_CHECK_INTERNAL(MP4WriteSample(encoder_private->mp4, encoder_private->video_track, data, size, MP4_INVALID_DURATION, 0, 1));
-    break;
-  default:
-    HME_CHECK(false, "Unknown frame type");
-    break;
-  }
+  H264EncoderPrivate *encoder_private = (H264EncoderPrivate *)token;
+  H264Encoder *encoder = encoder_private->encoder;
 }
 
-void H264MP4Encoder::initialize()
+void H264Encoder::initialize()
 {
   HME_CHECK(!private_, "Cannot call initialize more than once without calling finalize");
-  private_ = new H264MP4EncoderPrivate();
+  private_ = new H264EncoderPrivate();
   HME_CHECK_INTERNAL(private_);
   private_->encoder = this;
 
@@ -148,10 +62,6 @@ void H264MP4Encoder::initialize()
   HME_CHECK_INTERNAL(frameRate > 0);
   HME_CHECK_INTERNAL(quantizationParameter >= 10 && quantizationParameter <= 51);
   HME_CHECK_INTERNAL(speed <= 10);
-
-  private_->mp4 = MP4Create(outputFilename.c_str(), 0);
-  HME_CHECK_INTERNAL(private_->mp4 != MP4_INVALID_FILE_HANDLE);
-  MP4SetTimeScale(private_->mp4, TIMESCALE);
 
   H264E_create_param_t create_param;
   memset(&create_param, 0, sizeof(create_param));
@@ -185,7 +95,7 @@ void H264MP4Encoder::initialize()
   HME_CHECK_INTERNAL(H264E_init(private_->enc, &create_param) == H264E_STATUS_SUCCESS);
 }
 
-void H264MP4Encoder::addFrameYuv(const std::string &yuv_buffer)
+void H264Encoder::addFrameYuv(const std::string &yuv_buffer)
 {
   HME_CHECK(private_, INITIALIZE_MESSAGE);
   HME_CHECK(yuv_buffer.size() == width * height * 3 / 2 /*YUV*/,
@@ -218,7 +128,7 @@ void H264MP4Encoder::addFrameYuv(const std::string &yuv_buffer)
   }
 
   run_param.nalu_callback_token = this->private_;
-  run_param.nalu_callback = &H264MP4EncoderPrivate::nalu_callback;
+  run_param.nalu_callback = &H264EncoderPrivate::nalu_callback;
 
   int sizeof_coded_data = 0;
   uint8_t *coded_data = nullptr;
@@ -237,7 +147,7 @@ void H264MP4Encoder::addFrameYuv(const std::string &yuv_buffer)
   ++private_->frame;
 }
 
-void H264MP4Encoder::addFrameRgba(const std::string &rgba_buffer)
+void H264Encoder::addFrameRgba(const std::string &rgba_buffer)
 {
   HME_CHECK(private_, INITIALIZE_MESSAGE);
   HME_CHECK(rgba_buffer.size() == width * height * 4 /*RGBA*/,
@@ -292,17 +202,16 @@ void H264MP4Encoder::addFrameRgba(const std::string &rgba_buffer)
   addFrameYuv(private_->rgba_to_yuv_buffer);
 }
 
-void H264MP4Encoder::finalize()
+void H264Encoder::finalize()
 {
   HME_CHECK(private_, INITIALIZE_MESSAGE);
-  MP4Close(private_->mp4, 0);
   free(private_->enc);
   free(private_->scratch);
   delete private_;
   private_ = nullptr;
 }
 
-H264MP4Encoder::~H264MP4Encoder()
+H264Encoder::~H264Encoder()
 {
   HME_CHECK(private_ == nullptr, "Function finalize was not called before the encoder destructed");
 }

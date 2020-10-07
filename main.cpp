@@ -1,5 +1,5 @@
 // Copyright (C) Trevor Sundberg, MIT License (see LICENSE.md)
-#include "h264-mp4-encoder.h"
+#include "h264-encoder.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>

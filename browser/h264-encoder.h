@@ -4,9 +4,9 @@
 #include <stdio.h>
 #pragma once
 
-class H264MP4EncoderPrivate;
+class H264EncoderPrivate;
 
-typedef void (*H264MP4Encoder_data_callback)(
+typedef void (*H264Encoder_data_callback)(
     void *userdata,
     const uint8_t *data,
     const uint32_t size);
@@ -36,10 +36,10 @@ public:                                                             \
     name = value;                                                   \
   };
 
-class H264MP4Encoder
+class H264Encoder
 {
 public:
-  friend class H264MP4EncoderPrivate;
+  friend class H264EncoderPrivate;
 
   HME_PROPERTY(std::string, outputFilename, "output.mp4");
 
@@ -78,8 +78,8 @@ public:
 
   void finalize();
 
-  ~H264MP4Encoder();
+  ~H264Encoder();
 
 private:
-  H264MP4EncoderPrivate *private_ = nullptr;
+  H264EncoderPrivate *private_ = nullptr;
 };

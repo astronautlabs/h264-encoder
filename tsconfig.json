@@ -17,6 +17,6 @@
     "node_modules"
   ],
   "files": [
-    "h264-mp4-encoder.ts"
+    "h264-encoder.ts"
   ]
 }

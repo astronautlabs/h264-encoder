@@ -1,27 +1,30 @@
 {
-  "name": "h264-mp4-encoder",
+  "name": "h264-encoder",
   "version": "1.0.12",
   "description": "",
-  "main": "./embuild/dist/h264-mp4-encoder.node.js",
-  "types": "./embuild/dist/h264-mp4-encoder.d.ts",
+  "main": "./embuild/dist/h264-encoder.node.js",
+  "types": "./embuild/dist/h264-encoder.d.ts",
   "scripts": {
     "build": "webpack --mode production && npm run typings && npm run pages",
+    "rebuild": "node-gyp rebuild",
     "typings": "tsc --declaration --emitDeclarationOnly --project ./tsconfig.json --declarationDir ./embuild/dist && rm -rf ./embuild/dist/embuild",
-    "pages": "mkdir -p ./embuild/pages/embuild/dist && cp ./embuild/dist/h264-mp4-encoder.web.js ./embuild/pages/embuild/dist && cp ./test.html ./embuild/pages/index.html",
+    "pages": "mkdir -p ./embuild/pages/embuild/dist && cp ./embuild/dist/h264-encoder.web.js ./embuild/pages/embuild/dist && cp ./test.html ./embuild/pages/index.html",
     "test": "node test.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TrevorSundberg/h264-mp4-encoder.git"
+    "url": "git+https://github.com/TrevorSundberg/h264-encoder.git"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/TrevorSundberg/h264-mp4-encoder/issues"
+    "url": "https://github.com/TrevorSundberg/h264-encoder/issues"
   },
-  "homepage": "https://github.com/TrevorSundberg/h264-mp4-encoder#readme",
-  "dependencies": {},
+  "homepage": "https://github.com/TrevorSundberg/h264-encoder#readme",
+  "dependencies": {
+    "node-addon-api": "^3.0.2"
+  },
   "devDependencies": {
     "ts-loader": "^7.0.4",
     "typescript": "^3.9.2",

@@ -1,6 +1,6 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
-#include "h264-mp4-encoder.h"
+#include "h264-encoder.h"
 
 using namespace emscripten;
 

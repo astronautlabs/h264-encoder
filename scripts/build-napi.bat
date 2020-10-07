@@ -1,0 +1,1 @@
+git clone https://github.com/TrevorSundberg/minih264.git external/minih264

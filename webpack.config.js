@@ -3,7 +3,7 @@ const path = require("path");
 
 const createConfig = (target, libraryTarget) => ({
   devtool: "source-map",
-  entry: "./h264-mp4-encoder.ts",
+  entry: "./h264-encoder.ts",
   module: {
     rules: [
       {
@@ -16,7 +16,7 @@ const createConfig = (target, libraryTarget) => ({
     fs: "empty"
   },
   output: {
-    filename: 'h264-mp4-encoder.' + target + '.js',
+    filename: 'h264-encoder.' + target + '.js',
     path: path.join(__dirname, "embuild/dist"),
     library: "HME",
     libraryTarget

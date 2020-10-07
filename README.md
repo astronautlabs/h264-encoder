@@ -1,53 +1,36 @@
-# Introducing h264-mp4-encoder
-Encode directly to H264 and ouput as an MP4 in node or on the web with WebAssembly! Works with the HTML5 Canvas :)
+# @/h264-encoder
+Encodes raw YUV 4:2:0 progressive (yuv420p) frames into H264, returning back NALUs that can be sent in a transport 
+stream. Based on [minih264](https://github.com/lieff/minih264) and Trevor Sundberg's [h264-mp4-encoder](https://github.com/TrevorSundberg/h264-mp4-encoder/commits?author=TrevorSundberg).
 
-[See The Simple Demo](https://trevorsundberg.github.io/h264-mp4-encoder/) or checkout the animation site it was designed for: [Gifygram](https://gifygram.com)!
+Supports both Node.js as a native add-on as well as the web using WebAssembly.
 
 [![Build Status](https://travis-ci.org/TrevorSundberg/h264-mp4-encoder.svg?branch=master)](https://travis-ci.org/TrevorSundberg/h264-mp4-encoder)
+
+# Usage
 ```
-npm install h264-mp4-encoder
+npm install @astronautlabs/h264-encoder
 ```
 
-# Example
-Web:
-```html
-<script src="https://unpkg.com/h264-mp4-encoder/embuild/dist/h264-mp4-encoder.web.js"></script>
-```
-JavaScript:
-```js
-const HME = require("h264-mp4-encoder");
-```
-TypeScript:
-```ts
-import * as HME from "h264-mp4-encoder";
-```
-Dynamic Import / Webpack:
-```ts
-const HME = await import("h264-mp4-encoder");
-// To only import the type in TypeScript:
-import("h264-mp4-encoder").H264MP4Encoder;
-```
 Example:
 ```js
-HME.createH264MP4Encoder().then(encoder => {
-    // Must be a multiple of 2.
-    encoder.width = 100;
-    encoder.height = 100;
-    encoder.initialize();
-    // Add a single gray frame, the alpha is ignored.
-    encoder.addFrameRgba(new Uint8Array(encoder.width * encoder.height * 4).fill(128))
-    // For canvas:
-    // encoder.addFrameRgba(ctx.getImageData(0, 0, encoder.width * encoder.height).data);
-    encoder.finalize();
-    const uint8Array = encoder.FS.readFile(encoder.outputFilename);
-    console.log(uint8Array);
-    encoder.delete();
-})
-````
+import * as HME from "@astronautlabs/h264-encoder";
 
-You can also use `await`:
-```js
-const encoder = await HME.createH264MP4Encoder();
+let encoder = await HME.createH264MP4Encoder();
+
+// Must be a multiple of 2.
+encoder.width = 100;
+encoder.height = 100;
+encoder.initialize();
+
+// Add a single gray frame, the alpha is ignored.
+encoder.addFrameRgba(new Uint8Array(encoder.width * encoder.height * 4).fill(128))
+
+// For canvas:
+// encoder.addFrameRgba(ctx.getImageData(0, 0, encoder.width * encoder.height).data);
+encoder.finalize();
+const uint8Array = encoder.FS.readFile(encoder.outputFilename);
+console.log(uint8Array);
+encoder.delete();
 ```
 
 # Use with Webpack
@@ -62,9 +45,9 @@ When using this library with Webpack to package onto a browser environment it wi
 
 ```ts
 /** Construct the H264MP4Encoder. Waits for the WASM to complete loading before returning. */
-async function createH264MP4Encoder(): Promise<H264MP4Encoder>;
+async function createH264Encoder(): Promise<H264Encoder>;
 
-interface H264MP4Encoder {
+interface H264Encoder {
     /**
      * Name of the file that we output.
      * After `encoder.finalize()` use `encoder.FS.readFile(encoder.outputFilename)` after `finalize`.

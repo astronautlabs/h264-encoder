@@ -1,4 +1,4 @@
-const HME = require("./embuild/dist/h264-mp4-encoder.node.js");
+const HME = require("./embuild/dist/h264-encoder.node.js");
 
 HME.createH264MP4Encoder().then(encoder => {
     // Must be a multiple of 2.
