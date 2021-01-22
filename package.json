@@ -16,7 +16,10 @@
     "url": "git+https://github.com/TrevorSundberg/h264-encoder.git"
   },
   "keywords": [],
-  "author": "",
+  "author": {
+    "name": "Astronaut Labs, LLC",
+    "url": "https://astronautlabs.com/"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/TrevorSundberg/h264-encoder/issues"
