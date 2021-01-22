@@ -1,6 +1,7 @@
 MIT License
 
-Copyright (c) 2020 Trevor Sundberg, William Lahti
+Copyright (c) 2020 Trevor Sundberg
+Copyright (c) 2020-2021 Astronaut Labs, LLC
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
